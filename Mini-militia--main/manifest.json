@@ -1,0 +1,18 @@
+{
+  "name": "Doodle Army: Outpost Unlimited",
+  "short_name": "Doodle Outpost",
+  "description": "Classic 2D Jetpack Shooter with Unlimited Ammo & Cross-Play Multiplayer",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#141a15",
+  "theme_color": "#1a241b",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%231f2b20'/%3E%3Ccircle cx='256' cy='280' r='95' fill='%23f1c29b' stroke='%23000' stroke-width='12'/%3E%3Cpath d='M145 255 A110 110 0 0 1 367 255 Z' fill='%234b633c' stroke='%23000' stroke-width='12'/%3E%3Crect x='175' y='235' width='162' height='50' rx='10' fill='%231e293b' stroke='%23000' stroke-width='10'/%3E%3Crect x='190' y='246' width='56' height='28' fill='%2338bdf8'/%3E%3Crect x='266' y='246' width='56' height='28' fill='%2338bdf8'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

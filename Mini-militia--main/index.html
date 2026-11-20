@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f0c" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Doodle Outpost" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Doodle Outpost — Tactical 2D Multiplayer</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preload" as="image" href="assets/lobby_bg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js" defer></script>
+</head>
+<body>
+
+  <!-- ====================== PRELOADER ====================== -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-bg"></div>
+    <div class="loading-card">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="52" height="52"><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="24" cy="24" r="3.5" fill="currentColor"/><path d="M24 3v10M24 35v10M3 24h10M35 24h10" stroke="currentColor" stroke-width="3" stroke-linecap="square"/></svg>
+      </div>
+      <h1 class="loading-title">DOODLE OUTPOST</h1>
+      <p class="loading-sub">TACTICAL JETPACK WARFARE</p>
+      <div class="load-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loadBar">
+        <div id="loadBarFill" class="load-bar-fill"></div>
+        <div class="load-bar-ticks"></div>
+      </div>
+      <div class="load-meta">
+        <span id="loadStatus">INITIALIZING…</span>
+        <span id="loadPct">0%</span>
+      </div>
+      <p id="loadTip" class="load-tip">TIP: Hold the jetpack stick up to fly. Landing recharges fuel fast.</p>
+    </div>
+  </div>
+
+  <!-- ====================== LOBBY ====================== -->
+  <div id="lobbyScreen" class="overlay hidden">
+    <div class="lobby-bg"></div>
+    <div class="lobby-shell">
+      <header class="lobby-topbar">
+        <div class="brand-wrap">
+          <div class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="26" height="26"><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="3.5"/><circle cx="24" cy="24" r="3.5" fill="currentColor"/><path d="M24 3v10M24 35v10M3 24h10M35 24h10" stroke="currentColor" stroke-width="3.5" stroke-linecap="square"/></svg>
+          </div>
+          <div>
+            <h1>DOODLE OUTPOST</h1>
+            <p class="subtitle">SQUAD DEPLOYMENT // 10 MAPS • 9 OPERATORS • 7 WEAPONS</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="pill-badge">MAX 6 PLAYERS</span>
+          <span class="pill-badge online"><i class="dot"></i> SERVER ONLINE</span>
+          <button id="lobbySettingsBtn" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+        </div>
+      </header>
+
+      <div class="lobby-grid">
+        <!-- LEFT: OPERATOR FILE -->
+        <section class="tac-panel">
+          <div class="panel-label"><b>01</b> // OPERATOR FILE</div>
+
+          <div class="field-group">
+            <label for="playerNameInput">CALLSIGN</label>
+            <input type="text" id="playerNameInput" maxlength="14" placeholder="Enter callsign…" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          </div>
+
+          <div class="operator-stage">
+            <button type="button" id="charPrev" class="stage-arrow" aria-label="Previous operator">◀</button>
+            <div class="operator-preview">
+              <div class="op-frame"><img id="lobbyCharPreviewImg" alt="Selected operator" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" /></div>
+              <div class="op-meta">
+                <span class="op-index" id="lobbyCharIndex">OPERATOR 01 / 09</span>
+                <h2 id="lobbyCharName">DESERT MEDIC</h2>
+              </div>
+            </div>
+            <button type="button" id="charNext" class="stage-arrow" aria-label="Next operator">▶</button>
+          </div>
+          <div id="charStrip" class="char-strip" aria-label="Operator selector"></div>
+
+          <div class="field-group">
+            <label>STARTING WEAPON</label>
+            <div id="startWeaponStrip" class="weapon-strip"></div>
+          </div>
+
+          <div class="cap-tags">
+            <span>∞ RESERVE AMMO</span><span>JETPACK</span><span>FRAG</span><span>GAS</span><span>SMOKE</span>
+          </div>
+        </section>
+
+        <!-- RIGHT: MISSION SETUP -->
+        <section class="tac-panel">
+          <div class="panel-label"><b>02</b> // MISSION SETUP</div>
+
+          <div class="map-card">
+            <button type="button" id="mapPrev" class="stage-arrow" aria-label="Previous map">◀</button>
+            <div class="map-view">
+              <img id="mapPreview" alt="Map preview" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+              <div class="map-caption"><span id="mapIndexLabel">MAP 01 / 10</span><strong id="mapNameLabel">DESERT OUTPOST</strong></div>
+            </div>
+            <button type="button" id="mapNext" class="stage-arrow" aria-label="Next map">▶</button>
+          </div>
+
+          <div class="field-group">
+            <label for="mapSelect">ARENA</label>
+            <select id="mapSelect">
+              <option value="0">01 - Desert Outpost</option>
+              <option value="1">02 - Underground Bunker</option>
+              <option value="2">03 - Abandoned Scrapyard</option>
+              <option value="3">04 - Jungle River Camp</option>
+              <option value="4">05 - Catacombs Mine</option>
+              <option value="5">06 - Arctic Snow Base</option>
+              <option value="6">07 - Reactor Core</option>
+              <option value="7">08 - Bio-Hazard Lab</option>
+              <option value="8">09 - Mountain Helipad</option>
+              <option value="9">10 - Maximum Prison</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>MATCH TIMER <span id="lobbyTimerDisplay" class="mono">05:00</span></label>
+            <div class="preset-row">
+              <button type="button" class="preset-btn" data-sec="180">3 MIN</button>
+              <button type="button" class="preset-btn active" data-sec="300">5 MIN</button>
+              <button type="button" class="preset-btn" data-sec="600">10 MIN</button>
+            </div>
+          </div>
+
+          <div class="action-stack">
+            <button id="createRoomBtn" class="btn btn-lime">CREATE ROOM</button>
+            <button id="soloBotsBtn" class="btn btn-amber">PRACTICE VS BOTS</button>
+          </div>
+
+          <div class="join-divider"><span>OR JOIN A FRIEND</span></div>
+          <div class="join-row">
+            <input type="text" id="roomCodeInput" maxlength="4" placeholder="ROOM CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+            <button id="joinRoomBtn" class="btn btn-outline-lime">JOIN</button>
+          </div>
+          <div id="connectionStatus" class="status-text">Friend rooms use only the players who join (bots optional).</div>
+        </section>
+      </div>
+
+      <!-- WAITING ROOM -->
+      <div id="waitingRoom" class="waiting-box hidden">
+        <div class="room-banner">
+          <div>
+            <span class="label">ROOM CODE</span>
+            <strong id="displayRoomCode" class="code-text">----</strong>
+            <span id="roomCountBadge" class="count-badge">1 / 6 Players</span>
+          </div>
+          <div class="share-btns">
+            <button id="copyLinkBtn" class="btn-sm">COPY LINK</button>
+            <button id="whatsappShareBtn" class="btn-sm btn-wa">WHATSAPP</button>
+          </div>
+        </div>
+        <div id="lobbyPlayersList" class="players-list"></div>
+        <div class="waiting-actions">
+          <label class="checkbox-label"><input type="checkbox" id="fillBotsCheck" /> Fill empty slots with AI bots</label>
+          <button id="startMatchBtn" class="btn btn-lime btn-compact">START MATCH</button>
+        </div>
+      </div>
+
+      <footer class="lobby-footer">
+        <div class="friends-mini"><b>SAVED SQUAD:</b> <span id="savedFriendsList">None yet</span></div>
+        <button id="installAppBtn" class="btn-sm">INSTALL APP</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====================== SETTINGS DRAWER ====================== -->
+  <aside id="settingsDrawer" class="settings-drawer hidden" aria-label="Settings">
+    <div class="drawer-header">
+      <h3>SETTINGS</h3>
+      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-section">
+        <button type="button" id="toggleSoldierPickerBtn" class="soldier-accordion-btn">
+          <img id="drawerCharIcon" alt="Operator" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+          <div class="acc-text">
+            <div class="small-lbl">ACTIVE OPERATOR</div>
+            <strong id="drawerCharName">Desert Medic</strong>
+          </div>
+          <span id="soldierExpandArrow">▶</span>
+        </button>
+        <div id="characterGrid" class="char-grid hidden"></div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="toggle-row"><span>SFX SOUND</span><button type="button" id="toggleSfxBtn" class="switch-pill on">ON</button></div>
+        <div class="toggle-row"><span>BACKGROUND MUSIC</span><button type="button" id="toggleMusicBtn" class="switch-pill off">OFF</button></div>
+        <div class="toggle-row"><span>PROXIMITY MIC</span><button type="button" id="drawerMicBtn" class="switch-pill off">OFF</button></div>
+        <div class="toggle-row"><span>SCREEN SHAKE</span><button type="button" id="toggleShakeBtn" class="switch-pill on">ON</button></div>
+        <div class="toggle-row"><span>GRAPHICS</span><button type="button" id="toggleQualityBtn" class="switch-pill on">AUTO</button></div>
+        <div class="toggle-row"><span>FPS COUNTER</span><button type="button" id="toggleFpsBtn" class="switch-pill off">OFF</button></div>
+      </div>
+
+      <div id="drawerMatchActions" class="drawer-section hidden">
+        <button type="button" id="drawerExitMatchBtn" class="btn btn-red btn-block">EXIT TO LOBBY</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====================== INSTALL MODAL ====================== -->
+  <div id="installModal" class="overlay modal-overlay hidden">
+    <div class="lobby-shell modal-shell">
+      <h2 class="modal-title">INSTALL DOODLE OUTPOST</h2>
+      <div class="install-step"><strong>ANDROID (CHROME):</strong> Tap <b>⋮</b> → <b>Install app</b> or <b>Add to Home screen</b>.</div>
+      <div class="install-step"><strong>IPHONE / IPAD (SAFARI):</strong> Tap <b>Share</b> → <b>Add to Home Screen</b>.</div>
+      <button id="closeInstallModal" class="btn btn-lime btn-block">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ====================== GAME ====================== -->
+  <div id="gameContainer" class="hidden">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- full-screen feedback layers -->
+    <div id="damageVignette" class="fx-layer"></div>
+    <div id="lowHpVignette" class="fx-layer"></div>
+    <div id="deathOverlay" class="death-overlay hidden">
+      <div class="death-box"><span>ELIMINATED</span><strong id="deathTimer">3</strong><small>REDEPLOYING…</small></div>
+    </div>
+    <div id="fpsCounter" class="fps-counter hidden">60 FPS</div>
+    <div id="controlHints" class="control-hints hidden">
+      <span><b>WASD / SPACE</b> move + jetpack</span>
+      <span><b>MOUSE</b> aim • <b>LMB</b> fire</span>
+      <span><b>RMB / G</b> grenade • <b>F</b> type</span>
+      <span><b>R</b> reload • <b>Q / WHEEL</b> swap • <b>1-0</b> weapon</span>
+      <span><b>SHIFT</b> zoom out • <b>TAB</b> squad</span>
+    </div>
+
+    <!-- TOP HUD -->
+    <div id="topHud">
+      <div class="hud-left">
+        <div class="hud-avatar"><img id="hudAvatarImg" alt="Operator" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" /></div>
+        <div class="hud-info-col">
+          <div class="hud-title-line"><span id="hudCharRole">OPERATOR</span><span id="boostBadge" class="boost-pill hidden">2X OVERCHARGE</span></div>
+          <div class="bar-wrap bar-hp">
+            <div id="armorOverlay" class="bar-fill armor-overlay" style="width:0%"></div>
+            <div id="healthBar" class="bar-fill hp-fill" style="width:100%"></div>
+            <div class="bar-segs"></div>
+            <span id="hpText">HP 100</span>
+          </div>
+          <div class="bar-wrap bar-armor">
+            <div id="armorBar" class="bar-fill armor-fill" style="width:0%"></div>
+            <span id="armorText">SHIELD 0</span>
+          </div>
+          <div class="bar-wrap bar-fuel">
+            <div id="fuelBar" class="bar-fill fuel-fill" style="width:100%"></div>
+            <span id="fuelText">JET 100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-center">
+        <div class="live-timer-box">
+          <button id="timeMinusBtn" class="t-btn" title="Decrease time">-30s</button>
+          <span id="matchTimer">05:00</span>
+          <button id="timePlusBtn" class="t-btn" title="Increase time">+30s</button>
+        </div>
+        <div id="matchScore">DESERT OUTPOST • KILLS 0</div>
+      </div>
+
+      <div class="hud-right-wrap">
+        <div class="hud-top-btns">
+          <button id="toggleScoreboardBtn" class="hud-pill-btn">SQUAD</button>
+          <button id="toggleMicBtn" class="hud-pill-btn">MIC OFF</button>
+          <button id="fullscreenBtn" class="hud-pill-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+          <button id="inGameSettingsBtn" class="hud-pill-btn gear-btn" title="Settings" aria-label="Settings">⚙</button>
+        </div>
+        <div id="killFeed" class="kill-feed"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM WEAPON HUD -->
+    <div id="bottomHud">
+      <div id="weaponSelectorBar" class="weapon-dock"></div>
+      <button type="button" id="weaponHud" class="weapon-hud" aria-label="Weapon">
+        <img id="hudWeaponImg" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <div class="weapon-hud-text">
+          <span id="hudWeaponName">DUAL UZIS</span>
+          <div class="ammo-line"><b id="hudAmmo">40</b><i>/</i><em id="hudAmmoMax">∞</em></div>
+        </div>
+        <div class="reload-bar"><div id="reloadFill"></div></div>
+        <span id="reloadLabel" class="reload-label hidden">RELOADING</span>
+      </button>
+      <div id="grenadeHud" class="grenade-hud">
+        <img id="hudGrenadeImg" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <div><span id="hudGrenadeName">FRAG</span><small>[G] THROW • [F] TYPE</small></div>
+      </div>
+    </div>
+
+    <!-- SCOREBOARD -->
+    <div id="scoreboardModal" class="scoreboard-panel hidden">
+      <div class="sb-header">
+        <strong>SQUAD // ROOM <span id="hudRoomCode">---</span></strong>
+        <button id="closeSbBtn" class="btn-sm" aria-label="Close">✕</button>
+      </div>
+      <div id="scoreboardRows"></div>
+      <button id="leaveMatchBtn" class="btn btn-red btn-block" style="margin-top:8px;">EXIT TO LOBBY</button>
+    </div>
+
+    <!-- MATCH OVER -->
+    <div id="matchOverModal" class="overlay modal-overlay hidden">
+      <div class="lobby-shell modal-shell" style="text-align:center;">
+        <div class="pill-badge" style="display:inline-block;margin-bottom:6px;">TIME EXPIRED</div>
+        <h2 class="modal-title">MATCH COMPLETE</h2>
+        <div id="finalLeaderboardRows" class="final-rows"></div>
+        <div class="row">
+          <button id="rematchBtn" class="btn btn-lime" style="flex:1;">REMATCH</button>
+          <button id="matchOverLobbyBtn" class="btn btn-amber" style="flex:1;">LOBBY</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE CONTROLS -->
+    <div id="mobileControls">
+      <div id="leftStickZone" class="stick-zone">
+        <div id="leftBase" class="stick-base"><div id="leftKnob" class="stick-knob"></div></div>
+        <span class="stick-hint">MOVE / JETPACK</span>
+      </div>
+
+      <div id="rightStickZone" class="stick-zone">
+        <div id="rightBase" class="stick-base aim-base"><div id="rightKnob" class="stick-knob aim-knob"></div></div>
+        <span class="stick-hint">AIM &amp; FIRE</span>
+      </div>
+
+      <div id="rightActionCluster">
+        <div class="cluster-col cluster-col-a">
+          <button id="btnGrenadeType" class="action-circle btn-gtype" aria-label="Switch grenade">FRAG<small>TYPE</small></button>
+          <button id="btnZoom" class="action-circle btn-zoom" aria-label="Zoom out">ZOOM</button>
+          <button id="btnSwap" class="action-circle btn-swap" aria-label="Next weapon">SWAP</button>
+        </div>
+        <div class="cluster-col cluster-col-b">
+          <button id="btnGrenade" class="action-circle btn-gas" aria-label="Throw grenade">
+            <img id="btnGrenadeImg" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" /><small>THROW</small>
+          </button>
+          <button id="btnReload" class="action-circle btn-reload" aria-label="Reload">RELOAD</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTRAIT WARNING -->
+    <div id="rotateOverlay" class="rotate-overlay">
+      <div class="rotate-icon" aria-hidden="true">⟳</div>
+      <strong>ROTATE YOUR DEVICE</strong>
+      <span>Doodle Outpost plays in landscape.</span>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
